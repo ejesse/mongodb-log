@@ -13,7 +13,7 @@ class MongoFormatter(logging.Formatter):
         return data
     
 
-class MongoHandler(logging.Handler):
+class MongoHandler(logging.Handler,Connection):
     """ Custom log handler
 
     Logs all messages to a mongo collection. This  handler is 
@@ -25,11 +25,15 @@ class MongoHandler(logging.Handler):
         """ Create a handler for a given  """
         return cls(Connection(host, port)[db][collection])
         
-    def __init__(self, collection, level=logging.NOTSET):
+    def __init__(self, host='127.0.0.1', port=27017, db, collection, level=logging.NOTSET):
         """ Init log handler and store the collection handle """
         logging.Handler.__init__(self, level)
+        Connection.__init__((host, port)[db][collection])
         self.collection = collection
         self.formatter = MongoFormatter()
+        self.host = host
+        self.port = port
+        self.db = db
 
     def emit(self,record):
         """ Store the record to the collection. Async insert """
